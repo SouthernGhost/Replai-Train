@@ -124,7 +124,7 @@ def main():
     }
 
     # Save in the project folder (current working directory)
-    run_filename = f"training_params_{timestamp_safe}.json"
+    run_filename = f"runs/train/{settings['name']}/training_params.json"
     
     try:
         with open(run_filename, "w") as f:
