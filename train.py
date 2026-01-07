@@ -71,27 +71,28 @@ def main():
     args = parser.parse_args()
 
     # 1. Load Settings
-    settings = load_or_create_settings(args.settings)
+    train_settings = load_or_create_settings(args.settings)["train"]
+    export_settings = load_or_create_settings(args.settings)["export"]
     
     # Override settings with command line arguments if provided
     # 2. Initialize Model
     # Use a pretrained yolo11n model
-    logger.info(f"Initializing {settings['model'].split('.')[0]} model...")
-    model = YOLO(settings.get("model", "yolo11n.pt"))
+    logger.info(f"Initializing {train_settings['model'].split('.')[0]} model...")
+    model = YOLO(train_settings.get("model", "yolo11n.pt"))
 
     # 3. Train
     # Ensure freeze is set to freeze the backbone (typically 10 layers for YOLOv8/11)
     # We prioritize the settings file, but if 'freeze' was somehow removed or None, we enforce a default or warn.
     # The prompt explicitly asks to freeze the backbone.
-    if settings.get("freeze") is None:
+    if train_settings.get("freeze") is None:
         logger.warning("'freeze' parameter missing. Defaulting to 10 to freeze backbone.")
-        settings["freeze"] = 10
+        train_settings["freeze"] = 10
 
-    logger.info(f"Starting training with settings: {settings}")
+    logger.info(f"Starting training with settings: {train_settings}")
     
     # Train the model
     # Note: We pass the settings dictionary as keyword arguments
-    model.train(**settings)
+    model.train(**train_settings)
     logger.info("Training completed.")
     gc.collect()
     torch.cuda.empty_cache()
@@ -101,15 +102,17 @@ def main():
         try:
             logger.info(f"Exporting model to {args.export} format...")
             model.export(format=args.export,
-                            task="detect",
-                            imgsz=settings['imgsz'],
-                            batch=32,
-                            half=True,
-                            nms=True,
-                            dynamic=True
+                            task=export_settings['task'],
+                            imgsz=export_settings['imgsz'],
+                            batch=export_settings['batch'],
+                            half=export_settings['half'],
+                            nms=export_settings['nms'],
+                            dynamic=export_settings['dynamic'],
+                            int8=export_settings['int8'],
+                            data=export_settings['data']
                         )
         except Exception as e:
-            logger.error(f"Failed to export model to {settings['export']}: {e}")
+            logger.error(f"Failed to export model to {export_settings['export']}: {e}")
 
     # 5. Save Training Parameters
     # Create a record of this run
@@ -120,11 +123,11 @@ def main():
         "timestamp_iso": timestamp_iso,
         "date": datetime.now().strftime("%Y-%m-%d"),
         "time": datetime.now().strftime("%H:%M:%S"),
-        "settings_used": settings
+        "settings_used": train_settings
     }
 
     # Save in the project folder (current working directory)
-    run_filename = f"runs/train/{settings['name']}/training_params.json"
+    run_filename = f"runs/train/{train_settings['name']}/training_params.json"
     
     try:
         with open(run_filename, "w") as f:
