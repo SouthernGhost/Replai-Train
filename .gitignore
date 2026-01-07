@@ -1,0 +1,9 @@
+dataset/
+images/
+models/
+runs/
+videos/
+*.mp4
+*.pt
+*.engine
+*.onnx

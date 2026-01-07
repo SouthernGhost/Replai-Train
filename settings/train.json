@@ -1,0 +1,19 @@
+{
+    "model": "models/yolo11s.pt",
+    "data": "dataset/v3/data.yaml",
+    "epochs": 100,
+    "val": true,
+    "plots": true,
+    "seed": 42,
+    "patience": 10,
+    "imgsz": 960,
+    "batch": 16,
+    "freeze": 10,
+    "save": true,
+    "cache": "disk",
+    "device": "0",
+    "pretrained": true,
+    "project": "runs/train",
+    "name": "yolo11s_ball_v3",
+    "exist_ok": true            
+}
