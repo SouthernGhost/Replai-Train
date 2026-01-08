@@ -66,13 +66,11 @@ def load_or_create_settings(settings_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Train YOLO11 model with custom settings.")
-    parser.add_argument("--settings", type=str, default="settings.json", help="Path to the settings JSON file.")
-    parser.add_argument("--export", type=str, choices=['onnx', 'engine'], default=None, help="Export format (onnx or engine).")
+    parser.add_argument("--settings", type=str, required=True, default="settings/train.json", help="Path to the settings JSON file.")
     args = parser.parse_args()
 
     # 1. Load Settings
     train_settings = load_or_create_settings(args.settings)["train"]
-    export_settings = load_or_create_settings(args.settings)["export"]
     
     # Override settings with command line arguments if provided
     # 2. Initialize Model
@@ -96,23 +94,6 @@ def main():
     logger.info("Training completed.")
     gc.collect()
     torch.cuda.empty_cache()
-
-    # 4. Export Model
-    if args.export:
-        try:
-            logger.info(f"Exporting model to {args.export} format...")
-            model.export(format=args.export,
-                            task=export_settings['task'],
-                            imgsz=export_settings['imgsz'],
-                            batch=export_settings['batch'],
-                            half=export_settings['half'],
-                            nms=export_settings['nms'],
-                            dynamic=export_settings['dynamic'],
-                            int8=export_settings['int8'],
-                            data=export_settings['data']
-                        )
-        except Exception as e:
-            logger.error(f"Failed to export model to {export_settings['export']}: {e}")
 
     # 5. Save Training Parameters
     # Create a record of this run
