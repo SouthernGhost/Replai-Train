@@ -119,3 +119,46 @@ python downscale.py raw_footage.mp4 processed_720p.mp4
 ### Notes
 - This script requires an NVIDIA GPU and an FFmpeg build with `hevc_nvenc` support.
 - It attempts to maintain the aspect ratio while setting the height to 720 pixels.
+
+---
+
+## 4. Export Model (`export.py`)
+
+Exports a trained YOLO model to various formats using the Ultralytics framework. It loads export configurations from a settings file.
+
+### Usage
+```bash
+python export.py --settings <path_to_settings> [--weights <path_to_weights>]
+```
+
+### Arguments
+- `--settings`: (Required) Path to the settings JSON file containing export configurations.
+- `--weights`: (Optional) Path to the model weights file. Defaults to `models/best.pt`.
+
+### Example
+```bash
+# Export using default weights
+python export.py --settings settings/train.json
+
+# Export with specific weights
+python export.py --settings settings/train.json --weights runs/train/my_experiment/weights/best.pt
+```
+
+### Settings File Format
+The export settings should be under the `"export"` key in the JSON file, as shown in the `settings/train.json` example above. If no `"export"` key exists, the entire file is used as export config.
+
+Example export configuration:
+```json
+{
+    "export": {
+        "task": "detect",
+        "imgsz": [640, 640],
+        "batch": 1,
+        "half": false,
+        "nms": false,
+        "dynamic": false,
+        "int8": false,
+        "data": "dataset/v3test/data.yaml"
+    }
+}
+```
